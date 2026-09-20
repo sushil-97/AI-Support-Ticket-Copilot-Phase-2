@@ -80,6 +80,17 @@ support_documents = [
     """
 ]
 
+@st.cache_resource
+def load_embedding_model():
+    return SentenceTransformer("all-MiniLM-L6-v2")
+
+
+embedding_model = load_embedding_model()
+
+document_embeddings = embedding_model.encode(
+    support_documents
+)
+
 st.set_page_config(
     page_title="AI Support Ticket Copilot - RAG",
     page_icon="🤖",
