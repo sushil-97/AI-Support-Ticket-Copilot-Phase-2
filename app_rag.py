@@ -117,6 +117,65 @@ def retrieve_top_documents(ticket_text, top_k=2):
 
     return results
 
+@st.cache_resource
+def load_ml_models():
+
+    category_vectorizer = joblib.load(
+        "category_vectorizer.pkl"
+    )
+
+    category_model = joblib.load(
+        "category_model.pkl"
+    )
+
+    urgency_vectorizer = joblib.load(
+        "urgency_vectorizer.pkl"
+    )
+
+    urgency_model = joblib.load(
+        "urgency_model.pkl"
+    )
+
+    return (
+        category_vectorizer,
+        category_model,
+        urgency_vectorizer,
+        urgency_model
+    )
+
+
+(
+    category_vectorizer,
+    category_model,
+    urgency_vectorizer,
+    urgency_model
+) = load_ml_models()
+
+def predict_ticket(ticket_text):
+
+    # Category prediction
+    category_features = category_vectorizer.transform(
+        [ticket_text]
+    )
+
+    category = category_model.predict(
+        category_features
+    )[0]
+
+    # Urgency prediction
+    urgency_features = urgency_vectorizer.transform(
+        [ticket_text]
+    )
+
+    urgency = urgency_model.predict(
+        urgency_features
+    )[0]
+
+    return {
+        "category": category,
+        "urgency": urgency
+    }
+
 st.set_page_config(
     page_title="AI Support Ticket Copilot - RAG",
     page_icon="🤖",
