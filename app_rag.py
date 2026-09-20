@@ -3,6 +3,7 @@ import joblib
 import torch
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from sklearn.metrics.pairwise import cosine_similarity
 
 support_documents = [
     """
@@ -90,6 +91,31 @@ embedding_model = load_embedding_model()
 document_embeddings = embedding_model.encode(
     support_documents
 )
+
+def retrieve_top_documents(ticket_text, top_k=2):
+
+    # Convert the customer ticket into an embedding
+    ticket_embedding = embedding_model.encode([ticket_text])
+
+    # Compare ticket with all support documents
+    similarities = cosine_similarity(
+        ticket_embedding,
+        document_embeddings
+    )[0]
+
+    # Get indices of the most relevant documents
+    top_indices = similarities.argsort()[::-1][:top_k]
+
+    results = []
+
+    for index in top_indices:
+        results.append({
+            "index": int(index),
+            "score": float(similarities[index]),
+            "document": support_documents[index]
+        })
+
+    return results
 
 st.set_page_config(
     page_title="AI Support Ticket Copilot - RAG",
