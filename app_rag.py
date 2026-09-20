@@ -193,3 +193,47 @@ st.write(
 )
 
 st.success("RAG application environment loaded successfully!")
+
+ticket_text = st.text_area(
+    "Enter a support ticket",
+    placeholder="Example: Our website is unavailable and customers cannot log in."
+)
+
+if st.button("Analyze Ticket"):
+
+    if ticket_text.strip():
+
+        prediction = predict_ticket(ticket_text)
+
+        retrieved_docs = retrieve_top_documents(
+            ticket_text,
+            top_k=2
+        )
+
+        st.subheader("ML Predictions")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric(
+                "Category",
+                prediction["category"].title()
+            )
+
+        with col2:
+            st.metric(
+                "Urgency",
+                prediction["urgency"].title()
+            )
+
+        st.subheader("Retrieved Knowledge")
+
+        for i, doc in enumerate(retrieved_docs, start=1):
+
+            with st.expander(
+                f"Document {i} — Similarity: {doc['score']:.3f}"
+            ):
+                st.write(doc["document"])
+
+    else:
+        st.warning("Please enter a support ticket.")
